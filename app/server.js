@@ -23,7 +23,12 @@ client.on("chat", async (channel, user, message, self) => {
 // Event from rose-server
 socket.on('confirmPrize', function (data) {
 
-    // Todo: indentify "timeout", "points" and "ad" prizes to make it auto
+    // Todo: indentify "points" and "ad" prizes to make it auto
+
+    // Auto timeout user
+    if (data.prizes[data.prizes.length - 1] === '10 minutos de timeout') {
+        client.say(channel, `/timeout ${data.username} 600`)
+    }
 
     // Event to Twitch chat
     client.action(channel, `${data.username} ganhou ${data.prizes[data.prizes.length - 1]}!`)

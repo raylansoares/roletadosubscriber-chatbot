@@ -26,7 +26,7 @@ socket.on('confirmPrize', function (data) {
     // Todo: indentify "timeout", "points" and "ad" prizes to make it auto
 
     // Event to Twitch chat
-    client.action(channel, `${data.user} ganhou ${data.prize}!`)
+    client.action(channel, `${data.username} ganhou ${data.prizes[data.prizes.length - 1]}!`)
 });
 
 /* SUB EVENTS */

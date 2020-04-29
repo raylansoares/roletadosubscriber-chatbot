@@ -13,11 +13,11 @@ client.connect()
 
 // Event from Twitch chat
 // client.on("chat", async (channel, user, message, self) => {
-    // console.log(channel, user, message, self)
-    // if (message === 'TestSubWheel') {
-        // Event to rose-server
-        // socket.emit('requestPrize', user['display-name'])
-    // }
+//     if (message === 'TestSubWheel') {
+//         setTimeout(() => {
+//             socket.emit('requestPrize', user['display-name'])
+//         }, 5000)
+//     }
 // });
 
 // Event from rose-server
@@ -46,13 +46,19 @@ socket.on('confirmPrize', function (data) {
 /* SUB EVENTS */
 
 client.on("subscription", function (channel, username, methods, msg, userstate) {
-    socket.emit('requestPrize', username)
+    setTimeout(() => {
+        socket.emit('requestPrize', username)
+    }, 5000)
 });
  
 client.on("resub", function (channel, username, streakMonths, msg, userstate, methods) {
-    socket.emit('requestPrize', username)
+    setTimeout(() => {
+        socket.emit('requestPrize', username)
+    }, 5000)
 });
   
 client.on("subgift", function (channel, username, streakMonths, recipient, methods, userstate) {
-    socket.emit('requestPrize', recipient)
+    setTimeout(() => {
+        socket.emit('requestPrize', recipient)
+    }, 5000)
 });

@@ -23,18 +23,24 @@ client.connect()
 // Event from rose-server
 socket.on('confirmPrize', function (data) {
 
+    // Event to Twitch chat
+    setTimeout(() => {
+        client.action(channel, `${data.username} ganhou ${data.prizes[data.prizes.length - 1]}!`)
+    }, 3000)
+
     // Auto timeout user
     if (data.prizes[data.prizes.length - 1] === '10 minutos de timeout') {
-        client.say(channel, `/timeout ${data.username} 600`)
+        setTimeout(() => {
+            client.say(channel, `/timeout ${data.username} 600`)
+        }, 5000)
     }
 
     // Auto add give points to user
     if (data.prizes[data.prizes.length - 1] === '500 rosecoins') {
-        client.say(channel, `!givepoints ${data.username} 500`)
+        setTimeout(() => {
+            client.say(channel, `!givepoints ${data.username} 500`)
+        }, 5000)
     }
-
-    // Event to Twitch chat
-    client.action(channel, `${data.username} ganhou ${data.prizes[data.prizes.length - 1]}!`)
 });
 
 /* SUB EVENTS */

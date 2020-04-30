@@ -26,20 +26,20 @@ socket.on('confirmPrize', function (data) {
     // Event to Twitch chat
     setTimeout(() => {
         client.action(channel, `${data.username} ganhou ${data.prizes[data.prizes.length - 1]}!`)
-    }, 3000)
+    }, 5000)
 
     // Auto timeout user
     if (data.prizes[data.prizes.length - 1] === '10 minutos de timeout') {
         setTimeout(() => {
             client.say(channel, `/timeout ${data.username} 600`)
-        }, 5000)
+        }, 6000)
     }
 
     // Auto add give points to user
     if (data.prizes[data.prizes.length - 1] === '500 rosecoins') {
         setTimeout(() => {
             client.say(channel, `!givepoints ${data.username} 500`)
-        }, 5000)
+        }, 6000)
     }
 });
 
@@ -48,17 +48,17 @@ socket.on('confirmPrize', function (data) {
 client.on("subscription", function (channel, username, methods, msg, userstate) {
     setTimeout(() => {
         socket.emit('requestPrize', username)
-    }, 5000)
+    }, 10000)
 });
  
 client.on("resub", function (channel, username, streakMonths, msg, userstate, methods) {
     setTimeout(() => {
         socket.emit('requestPrize', username)
-    }, 5000)
+    }, 10000)
 });
   
 client.on("subgift", function (channel, username, streakMonths, recipient, methods, userstate) {
     setTimeout(() => {
         socket.emit('requestPrize', recipient)
-    }, 5000)
+    }, 10000)
 });

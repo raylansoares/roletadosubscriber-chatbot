@@ -32,7 +32,7 @@ socket.on('confirmPrize', function (data) {
     if (data.prizes[data.prizes.length - 1] === '10 minutos de timeout') {
         setTimeout(() => {
             client.say(channel, `/timeout ${data.username} 600`)
-        }, 6000)
+        }, 25000)
     }
 
     // Auto add give points to user
@@ -45,8 +45,8 @@ socket.on('confirmPrize', function (data) {
     // Auto ad
     if (data.prizes[data.prizes.length - 1] === 'Anúncio de graça') {
         setTimeout(() => {
-            client.say(channel, `/commercial 30`)
-        }, 6000)
+            client.say(channel, `/commercial 60`)
+        }, 25000)
     }
 });
 

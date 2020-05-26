@@ -41,6 +41,13 @@ socket.on('confirmPrize', function (data) {
             client.say(channel, `!givepoints ${data.username} 500`)
         }, 6000)
     }
+
+    // Auto ad
+    if (data.prizes[data.prizes.length - 1] === 'Anúncio de graça') {
+        setTimeout(() => {
+            client.say(channel, `/commercial 30`)
+        }, 6000)
+    }
 });
 
 /* SUB EVENTS */

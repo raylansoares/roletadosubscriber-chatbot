@@ -6,46 +6,60 @@ import * as configs from './configs';
 
 const socket = io(`${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`);
 
-const channel = `#${configs.channel}`;
 const client = configs.client;
 
 client.connect()
 
+socket.on('create', function () {
+    const rooms = process.env.ROOMS.split(',')
+    for (const room of rooms) socket.join(room)
+});
+
 // Event from Twitch chat
-// client.on("chat", async (channel, user, message, self) => {
-//     if (message === 'TestSubWheel') {
-//         setTimeout(() => {
-//             socket.emit('requestPrize', user['display-name'])
-//         }, 5000)
-//     }
-// });
+client.on("chat", async (channel, user, message, self) => {
+    if (message === 'TestSubWheel') {
+        setTimeout(() => {
+            const channelObject = configs.channels.find(findChannel => findChannel.name === channel.replace('#', ''))
+            if (!channelObject) return
+            socket.emit('requestPrize', { room: channelObject.id, username: user['display-name']});
+        }, 1000)
+    }
+});
 
 // Event from rose-server
 socket.on('confirmPrize', function (data) {
 
     // Event to Twitch chat
     setTimeout(() => {
-        client.action(channel, `${data.username} ganhou ${data.prizes[data.prizes.length - 1]}!`)
+        const channelObject = configs.channels.find(findChannel => findChannel.id === data.room)
+        if (!channelObject) return
+        client.action(`#${channelObject.name}`, `${data.username} ganhou ${data.prizes[data.prizes.length - 1]}!`)
     }, 5000)
 
     // Auto timeout user
     if (data.prizes[data.prizes.length - 1] === '10 minutos de timeout') {
         setTimeout(() => {
-            client.say(channel, `/timeout ${data.username} 600`)
+            const channelObject = configs.channels.find(findChannel => findChannel.id === data.room)
+            if (!channelObject) return
+            client.say(`#${channelObject.name}`, `/timeout ${data.username} 600`)
         }, 15000)
     }
 
     // Auto add give points to user
     if (data.prizes[data.prizes.length - 1] === '500 rosecoins') {
         setTimeout(() => {
-            client.say(channel, `!givepoints ${data.username} 500`)
+            const channelObject = configs.channels.find(findChannel => findChannel.id === data.room)
+            if (!channelObject) return
+            client.say(`#${channelObject.name}`, `!givepoints ${data.username} 500`)
         }, 6000)
     }
 
     // Auto ad
     if (data.prizes[data.prizes.length - 1] === 'Anúncio de graça') {
         setTimeout(() => {
-            client.say(channel, `/commercial 60`)
+            const channelObject = configs.channels.find(findChannel => findChannel.id === data.room)
+            if (!channelObject) return
+            client.say(`#${channelObject.name}`, `/commercial 60`)
         }, 15000)
     }
 });
@@ -54,18 +68,24 @@ socket.on('confirmPrize', function (data) {
 
 client.on("subscription", function (channel, username, methods, msg, userstate) {
     setTimeout(() => {
-        socket.emit('requestPrize', username)
+        const channelObject = configs.channels.find(findChannel => findChannel.name === channel.replace('#', ''))
+        if (!channelObject) return
+        socket.emit('requestPrize', { room: channelObject.id, username: username});
     }, 10000)
 });
  
 client.on("resub", function (channel, username, streakMonths, msg, userstate, methods) {
     setTimeout(() => {
-        socket.emit('requestPrize', username)
+        const channelObject = configs.channels.find(findChannel => findChannel.name === channel.replace('#', ''))
+        if (!channelObject) return
+        socket.emit('requestPrize', { room: channelObject.id, username: username});
     }, 10000)
 });
   
 client.on("subgift", function (channel, username, streakMonths, recipient, methods, userstate) {
     setTimeout(() => {
-        socket.emit('requestPrize', recipient)
+        const channelObject = configs.channels.find(findChannel => findChannel.name === channel.replace('#', ''))
+        if (!channelObject) return
+        socket.emit('requestPrize', { room: channelObject.id, username: recipient});
     }, 10000)
 });

@@ -4,11 +4,11 @@ const tmi = require("tmi.js");
 
 // Todo: Get from server
 const channels = [
-    { name: 'raylanprime', id: '84768782' },
-    { name: 'liahkurumi', id: '219093951' }
+    { channel: 'raylanprime', code: 'ODQ3Njg3ODI=' },
+    { channel: 'liahkurumi', code: 'MjE5MDkzOTUx' }
 ]
 
-const channelsNames = channels.map(channel => channel.name)
+const channelsNames = channels.map(channel => channel.channel)
 
 const config = {
     options: {

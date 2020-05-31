@@ -10,18 +10,13 @@ const client = configs.client;
 
 client.connect()
 
-socket.on('create', function () {
-    const rooms = process.env.ROOMS.split(',')
-    for (const room of rooms) socket.join(room)
-});
-
 // Event from Twitch chat
 client.on("chat", async (channel, user, message, self) => {
     if (message === 'TestSubWheel') {
         setTimeout(() => {
-            const channelObject = configs.channels.find(findChannel => findChannel.name === channel.replace('#', ''))
+            const channelObject = configs.channels.find(findChannel => findChannel.channel === channel.replace('#', ''))
             if (!channelObject) return
-            socket.emit('requestPrize', { room: channelObject.id, username: user['display-name']});
+            socket.emit('requestPrize', { code: channelObject.code, username: user['display-name']});
         }, 1000)
     }
 });
@@ -29,37 +24,32 @@ client.on("chat", async (channel, user, message, self) => {
 // Event from rose-server
 socket.on('confirmPrize', function (data) {
 
+    const channelObject = configs.channels.find(findChannel => findChannel.code === data.code)
+    if (!channelObject) return
+
     // Event to Twitch chat
     setTimeout(() => {
-        const channelObject = configs.channels.find(findChannel => findChannel.id === data.room)
-        if (!channelObject) return
-        client.action(`#${channelObject.name}`, `${data.username} ganhou ${data.prizes[data.prizes.length - 1]}!`)
+        client.action(`#${channelObject.channel}`, `${data.username} ganhou ${data.prizes[data.prizes.length - 1]}!`)
     }, 5000)
 
     // Auto timeout user
     if (data.prizes[data.prizes.length - 1] === '10 minutos de timeout') {
         setTimeout(() => {
-            const channelObject = configs.channels.find(findChannel => findChannel.id === data.room)
-            if (!channelObject) return
-            client.say(`#${channelObject.name}`, `/timeout ${data.username} 600`)
+            client.say(`#${channelObject.channel}`, `/timeout ${data.username} 600`)
         }, 15000)
     }
 
     // Auto add give points to user
     if (data.prizes[data.prizes.length - 1] === '500 rosecoins') {
         setTimeout(() => {
-            const channelObject = configs.channels.find(findChannel => findChannel.id === data.room)
-            if (!channelObject) return
-            client.say(`#${channelObject.name}`, `!givepoints ${data.username} 500`)
+            client.say(`#${channelObject.channel}`, `!givepoints ${data.username} 500`)
         }, 6000)
     }
 
     // Auto ad
     if (data.prizes[data.prizes.length - 1] === 'Anúncio de graça') {
         setTimeout(() => {
-            const channelObject = configs.channels.find(findChannel => findChannel.id === data.room)
-            if (!channelObject) return
-            client.say(`#${channelObject.name}`, `/commercial 60`)
+            client.say(`#${channelObject.channel}`, `/commercial 60`)
         }, 15000)
     }
 });
@@ -68,24 +58,24 @@ socket.on('confirmPrize', function (data) {
 
 client.on("subscription", function (channel, username, methods, msg, userstate) {
     setTimeout(() => {
-        const channelObject = configs.channels.find(findChannel => findChannel.name === channel.replace('#', ''))
+        const channelObject = configs.channels.find(findChannel => findChannel.channel === channel.replace('#', ''))
         if (!channelObject) return
-        socket.emit('requestPrize', { room: channelObject.id, username: username});
+        socket.emit('requestPrize', { code: channelObject.code, username: username});
     }, 10000)
 });
  
 client.on("resub", function (channel, username, streakMonths, msg, userstate, methods) {
     setTimeout(() => {
-        const channelObject = configs.channels.find(findChannel => findChannel.name === channel.replace('#', ''))
+        const channelObject = configs.channels.find(findChannel => findChannel.channel === channel.replace('#', ''))
         if (!channelObject) return
-        socket.emit('requestPrize', { room: channelObject.id, username: username});
+        socket.emit('requestPrize', { code: channelObject.code, username: username});
     }, 10000)
 });
   
 client.on("subgift", function (channel, username, streakMonths, recipient, methods, userstate) {
     setTimeout(() => {
-        const channelObject = configs.channels.find(findChannel => findChannel.name === channel.replace('#', ''))
+        const channelObject = configs.channels.find(findChannel => findChannel.channel === channel.replace('#', ''))
         if (!channelObject) return
-        socket.emit('requestPrize', { room: channelObject.id, username: recipient});
+        socket.emit('requestPrize', { code: channelObject.code, username: recipient});
     }, 10000)
 });

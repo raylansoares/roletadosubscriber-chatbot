@@ -4,6 +4,7 @@
   "description": "Rose chatbot with NodeJS",
   "main": "index.js",
   "scripts": {
+    "dev": "node-dev index.js",
     "start": "node index.js"
   },
   "repository": {
@@ -19,6 +20,7 @@
   },
   "dependencies": {
     "dotenv": "^8.2.0",
+    "node-dev": "^4.0.0",
     "socket.io-client": "^2.3.0",
     "tmi.js": "^1.5.0"
   }

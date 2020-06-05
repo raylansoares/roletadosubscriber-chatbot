@@ -4,11 +4,31 @@ import io from 'socket.io-client';
 
 import * as configs from './configs';
 
+import axios from 'axios';
+
 const socket = io(`${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`);
 
 const client = configs.client;
 
-client.connect()
+const url = `${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/users`;
+
+const connect = () => {
+    axios.get(url, { headers: { 
+        'x-client-secret': process.env.CLIENT_SECRET
+    } }).then((response) => {
+        const channels = response.data.map(user => `#${user.login}`)
+        client.channels = channels
+        client.connect()
+    }).catch()
+}
+
+connect()
+
+socket.on('newChannel', function () {
+    client.disconnect().then(() => {
+        connect()
+    })
+});
 
 // Event from Twitch chat
 client.on("chat", async (channel, user, message, self) => {

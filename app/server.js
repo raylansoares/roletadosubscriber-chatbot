@@ -42,7 +42,7 @@ socket.on('newChannel', function () {
 
 // Event from Twitch chat
 client.on("chat", async (channel, user, message, self) => {
-    if (message === 'TestSubWheel') {
+    if (message === 'TestSubWheel' && user.username === channel.replace('#', '')) {
         setTimeout(() => {
             const channelObject = channels.find(findChannel => findChannel.channel === channel)
             if (!channelObject) return
@@ -50,6 +50,10 @@ client.on("chat", async (channel, user, message, self) => {
         }, 1000)
     }
 });
+
+const replace = (string, data) => {
+    return string.replace('{user}', data.username).replace('{prize}', data.prizes[data.prizes.length - 1].name)
+}
 
 // Event from rose-server
 socket.on('confirmPrize', function (data) {
@@ -59,28 +63,17 @@ socket.on('confirmPrize', function (data) {
 
     // Event to Twitch chat
     setTimeout(() => {
-        client.action(channelObject.channel, `${data.username} ganhou ${data.prizes[data.prizes.length - 1]}!`)
+        client.action(channelObject.channel,replace(data.prizes[data.prizes.length - 1].message, data))
     }, 5000)
 
-    // Auto timeout user
-    if (data.prizes[data.prizes.length - 1] === '10 minutos de timeout') {
-        setTimeout(() => {
-            client.say(channelObject.channel, `/timeout ${data.username} 600`)
-        }, 15000)
-    }
+    const command = data.prizes[data.prizes.length - 1].command
 
-    // Auto add give points to user
-    if (data.prizes[data.prizes.length - 1] === '500 rosecoins') {
+    if(command) {
+        if (command[0] === '@') return
+        const delay = 6000 + ((data.prizes[data.prizes.length - 1].delay || 0) * 1000)
         setTimeout(() => {
-            client.say(channelObject.channel, `!givepoints ${data.username} 500`)
-        }, 6000)
-    }
-
-    // Auto ad
-    if (data.prizes[data.prizes.length - 1] === 'Anúncio de graça') {
-        setTimeout(() => {
-            client.say(channelObject.channel, `/commercial 60`)
-        }, 15000)
+            client.say(channelObject.channel, replace(command, data))
+        }, delay)
     }
 });
 

@@ -63,7 +63,7 @@ socket.on('confirmPrize', function (data) {
 
     // Event to Twitch chat
     setTimeout(() => {
-        client.action(channelObject.channel,replace(data.prizes[data.prizes.length - 1].message, data))
+        client.action(channelObject.channel, replace(data.prizes[data.prizes.length - 1].message, data))
     }, 5000)
 
     const command = data.prizes[data.prizes.length - 1].command
@@ -81,7 +81,7 @@ socket.on('confirmPrize', function (data) {
 
 client.on("subscription", function (channel, username, methods, msg, userstate) {
     setTimeout(() => {
-        const channelObject = channels.find(findChannel => findChannel.channel === channel.replace('#', ''))
+        const channelObject = channels.find(findChannel => findChannel.channel === channel)
         if (!channelObject) return
         socket.emit('requestPrize', { code: channelObject.code, username: username});
     }, 10000)
@@ -89,7 +89,7 @@ client.on("subscription", function (channel, username, methods, msg, userstate) 
  
 client.on("resub", function (channel, username, streakMonths, msg, userstate, methods) {
     setTimeout(() => {
-        const channelObject = channels.find(findChannel => findChannel.channel === channel.replace('#', ''))
+        const channelObject = channels.find(findChannel => findChannel.channel === channel)
         if (!channelObject) return
         socket.emit('requestPrize', { code: channelObject.code, username: username});
     }, 10000)
@@ -97,7 +97,7 @@ client.on("resub", function (channel, username, streakMonths, msg, userstate, me
   
 client.on("subgift", function (channel, username, streakMonths, recipient, methods, userstate) {
     setTimeout(() => {
-        const channelObject = channels.find(findChannel => findChannel.channel === channel.replace('#', ''))
+        const channelObject = channels.find(findChannel => findChannel.channel === channel)
         if (!channelObject) return
         socket.emit('requestPrize', { code: channelObject.code, username: recipient});
     }, 10000)

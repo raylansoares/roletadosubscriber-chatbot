@@ -10,7 +10,7 @@ const socket = io(`${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`);
 
 const client = configs.client;
 
-let channels = {}
+let channels = []
 
 const url = `${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/users`;
 

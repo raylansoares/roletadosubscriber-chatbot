@@ -2,8 +2,6 @@ require('dotenv').config()
 
 const tmi = require("tmi.js");
 
-const channel = process.env.CHANNEL
-
 const config = {
     options: {
         debug: true
@@ -16,12 +14,11 @@ const config = {
         username: process.env.USERNAME,
         password: process.env.PASSWORD,
     },
-    channels: [channel]
+    channels: []
 };
 
 const client = new tmi.client(config);
 
 export {
-    channel,
     client
 }

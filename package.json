@@ -20,9 +20,11 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
+    "dayjs": "^1.8.32",
     "dotenv": "^8.2.0",
     "node-dev": "^4.0.0",
     "socket.io-client": "^2.3.0",
-    "tmi.js": "^1.5.0"
+    "tmi.js": "^1.5.0",
+    "twitchps": "^1.5.4"
   }
 }

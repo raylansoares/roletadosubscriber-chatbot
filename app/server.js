@@ -6,6 +6,12 @@ import * as configs from './configs';
 
 import axios from 'axios';
 
+const TwitchPS = require('twitchps');
+
+import dayjs from 'dayjs'
+import 'dayjs/locale/pt-br';
+dayjs.locale("pt-br");
+
 const socket = io(`${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`);
 
 const client = configs.client;
@@ -22,8 +28,20 @@ const connect = () => {
         const channelsNames = []
 
         response.data.forEach(user => {
+            const channelId = Buffer.from(user.code, 'base64').toString('ascii');
+            const channelToken = user.access_token;
+
+            const validToken = dayjs()
+                .subtract(3, 'hour')
+                .isBefore(dayjs(user.expires));
+            
+            if (channelId !== process.env.CHANNEL && validToken) {
+                updateTopics({ channel: channelId, token: channelToken });
+            }
             const login = `#${user.login}`
+
             channels.push({ channel: login, code: user.code })
+            
             channelsNames.push(login)
         })
 
@@ -32,8 +50,61 @@ const connect = () => {
     }).catch()
 }
 
+const init_topics = [
+    {
+        topic: `channel-points-channel-v1.${process.env.CHANNEL}`,
+        token: process.env.TOKEN
+    }
+];
+
+const ps = new TwitchPS({
+    init_topics: init_topics,
+    reconnect: false,
+    debug: true
+});
+
+const updateTopics = (data) => {
+    try {
+        ps.removeTopic([{
+            topic: `channel-points-channel-v1.${data.channel}`
+        }]);
+        ps.addTopic([{
+            topic: `channel-points-channel-v1.${data.channel}`,
+            token: data.token
+        }]);
+    } catch (e) {}
+}
+
+// PS error
+ps.on('error', () => {})
+
+// Get PS channel points event
+ps.on('channel-points', (data) => {
+  try {
+    const username = data.redemption.user.login;
+    const channelId = data.redemption.channel_id;
+    const rewardTitle = data.redemption.reward.title;
+
+    const code = Buffer.from(channelId, 'utf8');
+    const channelCode = code.toString('base64')
+
+    // Verify reward and and emit wheel event to server
+    if (rewardTitle === 'Ganhe uma roleta do subscriber') {
+        socket.emit('requestPrize', { code: channelCode, username: username});
+    }
+  } catch (e) {}
+});
+
 connect()
 
+// Update PS on user login or refresh token (Event from server)
+socket.on('pubSub', function (data) {
+    if (data.channel !== process.env.CHANNEL) {
+        updateTopics(data);
+    }
+});
+
+// Connect to a new channel chat (Event from server)
 socket.on('newChannel', function () {
     client.disconnect().then(() => {
         connect()

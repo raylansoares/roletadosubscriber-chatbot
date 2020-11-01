@@ -9,8 +9,6 @@ import axios from 'axios';
 const TwitchPS = require('twitchps');
 
 import dayjs from 'dayjs'
-import 'dayjs/locale/pt-br';
-dayjs.locale("pt-br");
 
 const socket = io(`${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`);
 
@@ -31,9 +29,7 @@ const connect = () => {
             const channelId = Buffer.from(user.code, 'base64').toString('ascii');
             const channelToken = user.access_token;
 
-            const validToken = dayjs()
-                .subtract(3, 'hour')
-                .isBefore(dayjs(user.expires));
+            const validToken = dayjs().isBefore(dayjs(user.expires));
             
             if (channelId !== process.env.CHANNEL && validToken) {
                 updateTopics({ channel: channelId, token: channelToken });
@@ -59,15 +55,12 @@ const init_topics = [
 
 const ps = new TwitchPS({
     init_topics: init_topics,
-    reconnect: false,
+    reconnect: true,
     debug: true
 });
 
 const updateTopics = (data) => {
     try {
-        ps.removeTopic([{
-            topic: `channel-points-channel-v1.${data.channel}`
-        }]);
         ps.addTopic([{
             topic: `channel-points-channel-v1.${data.channel}`,
             token: data.token

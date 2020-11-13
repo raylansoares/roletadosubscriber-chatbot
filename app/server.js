@@ -130,7 +130,7 @@ socket.on('confirmPrize', function (data) {
 
         // Event to Twitch chat
         setTimeout(() => {
-            client.action(channelObject.channel, replace(data.prizes[data.prizes.length - 1].message, data))
+            client.action(channelObject.channel, '-> ' + replace(data.prizes[data.prizes.length - 1].message, data))
         }, 5000)
 
         const command = data.prizes[data.prizes.length - 1].command

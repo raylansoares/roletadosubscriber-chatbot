@@ -6,10 +6,6 @@ import * as configs from './configs';
 
 import axios from 'axios';
 
-const TwitchPS = require('twitchps');
-
-import dayjs from 'dayjs'
-
 const socket = io(`${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`);
 
 const client = configs.client;
@@ -26,18 +22,8 @@ const connect = () => {
         const channelsNames = []
 
         response.data.forEach(user => {
-            const channelId = Buffer.from(user.code, 'base64').toString('ascii');
-            const channelToken = user.access_token;
-
-            const validToken = dayjs().isBefore(dayjs(user.expires));
-            
-            if (channelId !== process.env.CHANNEL && validToken) {
-                updateTopics({ channel: channelId, token: channelToken });
-            }
             const login = `#${user.login}`
-
             channels.push({ channel: login, code: user.code })
-            
             channelsNames.push(login)
         })
 
@@ -46,56 +32,14 @@ const connect = () => {
     }).catch()
 }
 
-const init_topics = [
-    {
-        topic: `channel-points-channel-v1.${process.env.CHANNEL}`,
-        token: process.env.TOKEN
-    }
-];
-
-const ps = new TwitchPS({
-    init_topics: init_topics,
-    reconnect: true,
-    debug: true
-});
-
-const updateTopics = (data) => {
-    try {
-        ps.addTopic([{
-            topic: `channel-points-channel-v1.${data.channel}`,
-            token: data.token
-        }]);
-    } catch (e) {}
-}
-
-// PS error
-ps.on('error', () => {})
-
-// Get PS channel points event
-ps.on('channel-points', (data) => {
-  try {
-    const username = data.redemption.user.login;
-    const channelId = data.redemption.channel_id;
-    const rewardTitle = data.redemption.reward.title;
-
-    const code = Buffer.from(channelId, 'utf8');
-    const channelCode = code.toString('base64')
-
-    // Verify reward and and emit wheel event to server
-    if (rewardTitle === 'Ganhe uma roleta do subscriber') {
-        socket.emit('requestPrize', { code: channelCode, username: username});
-    }
-  } catch (e) {}
-});
-
 connect()
 
-// Update PS on user login or refresh token (Event from server)
-socket.on('pubSub', function (data) {
-    if (data.channel !== process.env.CHANNEL) {
-        updateTopics(data);
-    }
-});
+// Function to render a string with placeholder - {user} and {prize}
+const replace = (string, data) => {
+    return string.replace('{user}', data.username).replace('{prize}', data.prizes[data.prizes.length - 1].name)
+}
+
+/* SOCKET EVENTS */
 
 // Connect to a new channel chat (Event from server)
 socket.on('newChannel', function () {
@@ -104,40 +48,23 @@ socket.on('newChannel', function () {
     })
 });
 
-// Event from Twitch chat
-client.on("chat", async (channel, user, message, self) => {
-    try {
-        if (message === 'TestSubWheel' && user.username === channel.replace('#', '')) {
-            setTimeout(() => {
-                const channelObject = channels.find(findChannel => findChannel.channel === channel)
-                if (!channelObject) return
-                socket.emit('requestPrize', { code: channelObject.code, username: user['display-name']});
-            }, 1000)
-        }
-    } catch (e) {}
-    
-});
-
-const replace = (string, data) => {
-    return string.replace('{user}', data.username).replace('{prize}', data.prizes[data.prizes.length - 1].name)
-}
-
 // Event from rose-server
 socket.on('confirmPrize', function (data) {
     try {
         const channelObject = channels.find(findChannel => findChannel.code === data.code)
         if (!channelObject) return
 
+        const lastPrize = data.prizes[data.prizes.length - 1]
+
         // Event to Twitch chat
         setTimeout(() => {
-            client.action(channelObject.channel, '-> ' + replace(data.prizes[data.prizes.length - 1].message, data))
+            client.action(channelObject.channel, '-> ' + replace(lastPrize.message, data))
         }, 5000)
 
-        const command = data.prizes[data.prizes.length - 1].command
+        const command = lastPrize.command
 
-        if(command) {
-            if (command[0] === '@') return
-            const delay = 6000 + ((data.prizes[data.prizes.length - 1].delay || 0) * 1000)
+        if(command && command[0] !== '@') {
+            const delay = 6000 + ((lastPrize.delay || 0) * 1000)
             setTimeout(() => {
                 client.say(channelObject.channel, replace(command, data))
             }, delay)
@@ -147,7 +74,7 @@ socket.on('confirmPrize', function (data) {
 
 /* SUB EVENTS */
 
-client.on("subscription", function (channel, username, methods, msg, userstate) {
+client.on('subscription', function (channel, username, methods, msg, userstate) {
     try {
         setTimeout(() => {
             const channelObject = channels.find(findChannel => findChannel.channel === channel)
@@ -157,7 +84,7 @@ client.on("subscription", function (channel, username, methods, msg, userstate) 
     } catch (e) {}
 });
  
-client.on("resub", function (channel, username, streakMonths, msg, userstate, methods) {
+client.on('resub', function (channel, username, streakMonths, msg, userstate, methods) {
     try {
         setTimeout(() => {
             const channelObject = channels.find(findChannel => findChannel.channel === channel)
@@ -167,7 +94,7 @@ client.on("resub", function (channel, username, streakMonths, msg, userstate, me
     } catch (e) {}
 });
   
-client.on("subgift", function (channel, username, streakMonths, recipient, methods, userstate) {
+client.on('subgift', function (channel, username, streakMonths, recipient, methods, userstate) {
     try {
         setTimeout(() => {
             const channelObject = channels.find(findChannel => findChannel.channel === channel)

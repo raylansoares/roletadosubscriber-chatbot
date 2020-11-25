@@ -48,7 +48,7 @@ socket.on('newChannel', function () {
     })
 });
 
-// Event from rose-server
+// Event from server
 socket.on('confirmPrize', function (data) {
     try {
         const channelObject = channels.find(findChannel => findChannel.code === data.code)

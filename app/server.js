@@ -36,7 +36,8 @@ connect()
 
 // Function to render a string with placeholder - {user} and {prize}
 const replace = (string, data) => {
-    return string.replace('{user}', data.username).replace('{prize}', data.prizes[data.prizes.length - 1].name)
+    return string.replace('{user}', data.username)
+        .replace('{prize}', data.prizes[data.prizes.length - 1].name)
 }
 
 /* SOCKET EVENTS */
@@ -51,14 +52,18 @@ socket.on('newChannel', function () {
 // Event from server
 socket.on('confirmPrize', function (data) {
     try {
-        const channelObject = channels.find(findChannel => findChannel.code === data.code)
+        const channelObject = channels.find(
+            findChannel => findChannel.code === data.code
+        )
+
         if (!channelObject) return
 
         const lastPrize = data.prizes[data.prizes.length - 1]
 
         // Event to Twitch chat
         setTimeout(() => {
-            client.action(channelObject.channel, '-> ' + replace(lastPrize.message, data))
+            const message = '-> ' + replace(lastPrize.message, data)
+            client.action(channelObject.channel, message)
         }, 5000)
 
         const command = lastPrize.command
@@ -77,29 +82,63 @@ socket.on('confirmPrize', function (data) {
 client.on('subscription', function (channel, username, methods, msg, userstate) {
     try {
         setTimeout(() => {
-            const channelObject = channels.find(findChannel => findChannel.channel === channel)
+            const channelObject = channels.find(
+                findChannel => findChannel.channel === channel
+            )
+
             if (!channelObject) return
-            socket.emit('requestPrize', { code: channelObject.code, username: username});
+
+            socket.emit('requestPrize', {
+                code: channelObject.code,
+                username: username,
+                origin: 'Sub',
+                quantity: 1,
+                message: null
+            });
         }, 10000)
     } catch (e) {}
 });
- 
+
 client.on('resub', function (channel, username, streakMonths, msg, userstate, methods) {
     try {
         setTimeout(() => {
-            const channelObject = channels.find(findChannel => findChannel.channel === channel)
+            const channelObject = channels.find(
+                findChannel => findChannel.channel === channel
+            )
+
             if (!channelObject) return
-            socket.emit('requestPrize', { code: channelObject.code, username: username});
+
+            socket.emit('requestPrize', {
+                code: channelObject.code,
+                username: username,
+                origin: 'Resub',
+                quantity: parseInt(userstate['msg-param-cumulative-months'])
+                    ? parseInt(userstate['msg-param-cumulative-months'])
+                    : 1,
+                message: msg
+            });
         }, 10000)
     } catch (e) {}
 });
-  
+
 client.on('subgift', function (channel, username, streakMonths, recipient, methods, userstate) {
     try {
         setTimeout(() => {
-            const channelObject = channels.find(findChannel => findChannel.channel === channel)
+            const channelObject = channels.find(
+                findChannel => findChannel.channel === channel
+            )
+
             if (!channelObject) return
-            socket.emit('requestPrize', { code: channelObject.code, username: recipient});
+
+            socket.emit('requestPrize', {
+                code: channelObject.code,
+                username: recipient,
+                origin: 'SubGift',
+                quantity: parseInt(userstate['msg-param-months'])
+                    ? parseInt(userstate['msg-param-months'])
+                    : 1,
+                message: null
+            });
         }, 10000)
     } catch (e) {}
 });

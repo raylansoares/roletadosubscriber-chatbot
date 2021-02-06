@@ -42,11 +42,10 @@ const replace = (string, data) => {
 
 /* SOCKET EVENTS */
 
-// Connect to a new channel chat (Event from server)
-socket.on('newChannel', function () {
-    client.disconnect().then(() => {
-        connect()
-    })
+// Connect to channel (Event from server)
+socket.on('joinChannel', function (data) {
+    channels.push({ channel: data.channel, code: data.code })
+    client.join(`#${data.channel}`);
 });
 
 // Event from server

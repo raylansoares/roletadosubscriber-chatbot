@@ -13,9 +13,10 @@ const client = configs.client;
 let channels = []
 
 const url = `${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/api/users`;
+const params = '?active=true'
 
 const connect = () => {
-    axios.get(url, { headers: { 
+    axios.get(url + params, { headers: { 
         'x-client-secret': process.env.CLIENT_SECRET
     } }).then((response) => {
         channels = []
@@ -44,8 +45,15 @@ const replace = (string, data) => {
 
 // Connect to channel (Event from server)
 socket.on('joinChannel', function (data) {
-    channels.push({ channel: data.channel, code: data.code })
-    client.join(`#${data.channel}`);
+    const findChannel = channels.find(
+        channel => channel.code === data.code
+    )
+
+    if (findChannel) return
+    
+    const login = `#${data.channel}`
+    channels.push({ channel: login, code: data.code })
+    client.join(login)
 });
 
 // Event from server

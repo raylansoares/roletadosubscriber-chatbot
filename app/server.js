@@ -76,6 +76,22 @@ socket.on('confirmPrize', function (data) {
     } catch (e) {}
 });
 
+/* COMMANDS EVENTS */
+
+socket.on('executeCommand', function (data) {
+    try {
+        const channelObject = channels.find(
+            findChannel => findChannel.code === data.code
+        )
+
+        if (!channelObject || !data.action || !data.input) return
+
+        const target = data.input.split(' ')[0].replace('@', '')
+
+        client.say(channelObject.channel, `/${data.action} ${target} ${data.time || ''}`)
+    } catch (e) {}
+});
+
 /* SUB EVENTS */
 
 client.on('subscription', function (channel, username, methods, msg, userstate) {

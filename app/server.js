@@ -116,7 +116,8 @@ client.on('subscription', (channel, username, methods, msg, userstate) => {
         username: username,
         origin: 'Sub',
         quantity: 1,
-        message: null
+        message: null,
+        plan: userstate['msg-param-sub-plan']
       })
     }, 10000)
   } catch (e) {}
@@ -138,7 +139,8 @@ client.on('resub', (channel, username, streakMonths, msg, userstate, methods) =>
         quantity: parseInt(userstate['msg-param-cumulative-months'])
           ? parseInt(userstate['msg-param-cumulative-months'])
           : 1,
-        message: msg
+        message: msg,
+        plan: userstate['msg-param-sub-plan']
       })
     }, 10000)
   } catch (e) {}
@@ -160,7 +162,8 @@ client.on('subgift', (channel, username, streakMonths, recipient, methods, users
         quantity: parseInt(userstate['msg-param-months'])
           ? parseInt(userstate['msg-param-months'])
           : 1,
-        message: null
+        message: null,
+        plan: userstate['msg-param-sub-plan']
       })
     }, 10000)
   } catch (e) {}

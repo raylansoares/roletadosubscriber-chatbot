@@ -175,8 +175,28 @@ client.on("chat", async (channel, user, message, self) => {
     const isBroadcaster = channel === `#${user.username}`
     const isAdmin = user.username === process.env.ADMIN
     const isAdValidMesasge = message.split(' ')[0] === '!ad' && ['1','2','3'].includes(message.split(' ')[1])
+    const isValidWheelMessage = message === '!t'
+
     if ((isMod || isBroadcaster || isAdmin) && (isAdValidMesasge)) {
       client.say(channel, `/commercial ${message.split(' ')[1] * 60}`)
+      return
+    }
+
+    if (isAdmin && isValidWheelMessage) {
+      const channelObject = channels.find(
+        findChannel => findChannel.channel === channel
+      )
+
+      if (!channelObject) return
+
+      socket.emit('requestPrize', {
+        code: channelObject.code,
+        username: user.username,
+        origin: 'Admin',
+        quantity: null,
+        message: null,
+        plan: null
+      })
     }
   } catch (e) {}
 });

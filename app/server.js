@@ -168,3 +168,15 @@ client.on('subgift', (channel, username, streakMonths, recipient, methods, users
     }, 10000)
   } catch (e) {}
 })
+
+client.on("chat", async (channel, user, message, self) => {
+  try {
+    const isMod = user.mod
+    const isBroadcaster = channel === `#${user.username}`
+    const isAdmin = user.username === process.env.ADMIN
+    const isAdValidMesasge = message.split(' ')[0] === '!ad' && ['1','2','3'].includes(message.split(' ')[1])
+    if ((isMod || isBroadcaster || isAdmin) && (isAdValidMesasge)) {
+      client.say(channel, `/commercial ${message.split(' ')[1] * 60}`)
+    }
+  } catch (e) {}
+});
